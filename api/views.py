@@ -46,7 +46,7 @@ def segmentationView(request, format=None):
 
     # return the multiple files in zip type
     # Folder name in ZIP archive which contains the above files
-    zip_dir = "output_of_seg"
+    zip_dir = "output_of_segmentation"
     zip_filename = "%s.zip" % zip_dir
     # Open StringIO to grab in-memory ZIP contents
     strio = StringIO.StringIO()
