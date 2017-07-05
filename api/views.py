@@ -7,7 +7,9 @@ from django.http import HttpResponse
 from django.conf import settings
 from django.shortcuts import render
 from wsgiref.util import FileWrapper
-from .segmentation import segmentation_exec, del_service_files
+from .serializers import ParameterSerializer
+from .segmentation import segmentation_exec
+from .extrafunc import del_service_files
 import sys, os, os.path, zipfile, StringIO
 
 
@@ -20,31 +22,32 @@ def index(request):
 @csrf_exempt
 @api_view(['GET', 'POST'])
 def segmentationView(request, format=None):
+    if request.data.get('image') is None:
+        return HttpResponse("Please upload at least one binarized image.")
 
-    # Receive uploaded binarized image(s)
-    keys = request.data.keys()
-    if len(keys)<1:
-	return HttpResponse("Please selecting at least one binarized image.")
+    # Receive specified parameters values
+    # Receive parameters with model and serializer
+    data_dict = request.data.dict()
+    del data_dict['image']   # Image will be processed seperately for receiving multiple images
+    # Serialize the specified parameters, only containing the specified parameters
+    # If we want to generate the parameters object with all of the default paremeters, call parameters.save()
+    paras_serializer = ParameterSerializer(data=data_dict)
+    if paras_serializer.is_valid():
+        pass # needn't parameters.save(), since we needn't to store these parameters in DB
+
+    # Receive and store uploaded image(s)
+    # One or multiple images/values in one field
     imagenames = []
-    # One or multiple files/values in one field
-    for key in keys:
-	uploadedimages = request.data.getlist(key)
-	print("######## %d" % len(uploadedimages))
-	if len(uploadedimages) == 1:
-	    image_str = str(uploadedimages[0])
-	    imagenames.append(image_str)
-    	    default_storage.save(dataDir+"/"+image_str, uploadedimages[0])
-	elif len(uploadedimages) > 1:
-	    for image in uploadedimages:
-		image_str = str(image)
-		imagenames.append(image_str)
-		default_storage.save(dataDir+"/"+image_str, image)
-	
-    # Call OCR function
-    output_dirs = []
-    for imagename in imagenames:
-	output_dir = segmentation_exec(imagename)
-	output_dirs.append(output_dir)
+    imagepaths = []
+    images = request.data.getlist('image')
+    for image in images:
+        image_str = str(image)
+        imagenames.append(image_str)
+        imagepaths.append(dataDir+"/"+image_str)
+        default_storage.save(dataDir+"/"+image_str, image)
+    
+    # Call segmentation function
+    output_dirs = segmentation_exec(imagepaths, paras_serializer.data)
 
     # Put all output files path in a list
     outputfiles_path = []
@@ -80,61 +83,3 @@ def segmentationView(request, format=None):
     del_service_files(dataDir)
 
     return response
-
-'''
-## binarization specify and return output directory, but the output file name is fixed to 0001.bin.png and 0001.nrm.png 
-@csrf_exempt
-@api_view(['GET', 'POST'])
-def binarizationView(request, format=None):
-
-    # Receive uploaded image(s)
-    keys = request.data.keys()
-    if len(keys)<1:
-	return HttpResponse("Please selecting at least one image.")
-    imagenames = []
-    for index, key in enumerate(keys):
-	uploadedimage = request.data.get(key)
-	imagenames.append(str(uploadedimage))
-    	default_storage.save(srcImageDir + imagenames[index], uploadedimage)
-	
-    # Call OCR function
-    output_dirs = []
-    for index, imagename in enumerate(imagenames):
-	output_dir = binarization_exec(imagename)
-	output_dirs.append(output_dir)
-
-    # Put all output files path in a list
-    outputfiles_path = []
-    for output_dir in output_dirs:
-	for output_file  in os.listdir(output_dir):
-	    file_path = os.path.join(output_dir, output_file)
-	    outputfiles_path.append(file_path)
-
-    # return the multiple files in zip type
-    # Folder name in ZIP archive which contains the above files
-    zip_dir = "output_of_bin"
-    zip_filename = "%s.zip" % zip_dir
-    # Open StringIO to grab in-memory ZIP contents
-    strio = StringIO.StringIO()
-    # The zip compressor
-    zf = zipfile.ZipFile(strio, "w")
-
-    for fpath in outputfiles_path:
-        # Caculate path for file in zip
-        fdir, fname = os.path.split(fpath)
-	subdir = os.path.basename(os.path.normpath(fdir))
-        zip_path = os.path.join(zip_dir+"/"+subdir, fname)
-        # Add file, at correct path
-        zf.write(fpath, zip_path)
-
-    zf.close()
-    # Grab ZIP file from in-memory, make response with correct MIME-type
-    response = HttpResponse(strio.getvalue(), content_type="application/x-zip-compressed")
-    # And correct content-disposition
-    response["Content-Disposition"] = 'attachment; filename=%s' % zip_filename
-    
-    # Delete all files related to this service time
-    #del_service_files()
-
-    return response
-'''
