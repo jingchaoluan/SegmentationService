@@ -57,7 +57,8 @@ args = {
     # other parameters
     'nocheck':True,  # enable error checking on inputs
     'quiet':False,   # be less verbose, usally use with parallel together
-    'parallel':0     # number of parallel processes to use
+    'parallel':0,    # number of parallel processes to use
+    'debug':False
 }
 
 
@@ -81,19 +82,22 @@ def segmentation_exec(images, parameters):
 
     output_dirs = []
     if args['parallel']<2:
-        for i,f in enumerate(images):
-            if args['parallel']==1: print_info(f)
-            output_dir = safe_process((f,i+1))
+        for i,imagepath in enumerate(images):
+            if args['parallel']==1: print_info(imagepath)
+            output_dir = safe_process((imagepath,i+1))
             output_dirs.append(output_dir)
     else:
         pool = Pool(processes=args['parallel'])
         jobs = []
-        for i,f in enumerate(images): jobs += [(f,i+1)]
+        for i,imagepath in enumerate(images): jobs += [(imagepath,i+1)]
         result = pool.map(process,jobs)
+    
     return output_dirs
+
 
 def norm_max(v):
     return v/amax(v)
+
 
 def check_page(image):
     if len(image.shape)==3: return "input image is color image %s"%(image.shape,)
@@ -121,12 +125,13 @@ def B(a):
     return array(a,'B')
 
 def DSAVE(title,image):
+    if not args['debug']: return
     if type(image)==list:
         assert len(image)==3
         image = transpose(array(image),[1,2,0])
-    #fname = "_"+title+".png"
-    #print_info("debug " + fname)
-    #imsave(fname,image)
+    fname = "_"+title+".png"
+    print_info("debug " + fname)
+    imsave(fname,image)
 
 
 
@@ -312,16 +317,17 @@ def compute_segmentation(binary,scale):
 ################################################################
 
 def process(job):
-    fname,i = job
+    imagepath,i = job
     global base
-    base,_ = ocrolib.allsplitext(fname)
+    base,_ = ocrolib.allsplitext(imagepath)
     outputdir = base
+    imagename_base = os.path.basename(os.path.normpath(base))
 
     try:
-        binary = ocrolib.read_image_binary(fname)
+        binary = ocrolib.read_image_binary(imagepath)
     except IOError:
         if ocrolib.trace: traceback.print_exc()
-        print_error("cannot open either %s.bin.png or %s" % (base, fname))
+        print_error("cannot open either %s.bin.png or %s" % (base, imagepath))
         return
 
     checktype(binary,ABINARY2)
@@ -329,7 +335,7 @@ def process(job):
     if not args['nocheck']:
         check = check_page(amax(binary)-binary)
         if check is not None:
-            print_error("%s SKIPPED %s (use -n to disable this check)" % (fname, check))
+            print_error("%s SKIPPED %s (use -n to disable this check)" % (imagepath, check))
             return
 
     binary = 1-binary # invert
@@ -340,10 +346,10 @@ def process(job):
         scale = args['scale']
     print_info("scale %f" % (scale))
     if isnan(scale) or scale>1000.0:
-        print_error("%s: bad scale (%g); skipping\n" % (fname, scale))
+        print_error("%s: bad scale (%g); skipping\n" % (imagepath, scale))
         return
     if scale<args['minscale']:
-        print_error("%s: scale (%g) less than --minscale; skipping\n" % (fname, scale))
+        print_error("%s: scale (%g) less than --minscale; skipping\n" % (imagepath, scale))
         return
 
     # find columns and text lines
@@ -351,7 +357,7 @@ def process(job):
     if not args['quiet']: print_info("computing segmentation")
     segmentation = compute_segmentation(binary,scale)
     if amax(segmentation)>args['maxlines']:
-        print_error("%s: too many lines %g" % (fname, amax(segmentation)))
+        print_error("%s: too many lines %g" % (imagepath, amax(segmentation)))
         return
     if not args['quiet']: print_info("number of lines %g" % amax(segmentation))
 
@@ -378,13 +384,13 @@ def process(job):
     cleaned = ocrolib.remove_noise(binary,args['noise'])
     for i,l in enumerate(lines):
         binline = psegutils.extract_masked(1-cleaned,l,pad=args['pad'],expand=args['expand'])
-        ocrolib.write_image_binary("%s/01%04x.bin.png"%(outputdir,i+1),binline)
-    print_info("%6d  %s %4.1f %d" % (i, fname,  scale,  len(lines)))
+        ocrolib.write_image_binary("%s/%s_01%04x.bin.png"%(outputdir,imagename_base,i+1),binline)
+    print_info("%6d  %s %4.1f %d" % (i, imagepath,  scale,  len(lines)))
     return outputdir
 
 
 def safe_process(job):
-    fname,i = job
+    imagepath,i = job
     outputdir = None
     try:
         outputdir = process(job)
@@ -392,7 +398,7 @@ def safe_process(job):
         if e.trace:
             traceback.print_exc()
         else:
-            print_info(fname+":"+e)
+            print_info(imagepath+":"+e)
     except Exception as e:
         traceback.print_exc()
     return outputdir
