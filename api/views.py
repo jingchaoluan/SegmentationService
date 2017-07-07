@@ -52,13 +52,13 @@ def segmentationView(request, format=None):
     # Put all output files path in a list
     outputfiles_path = []
     for output_dir in output_dirs:
-	for output_file  in os.listdir(output_dir):
-	    file_path = os.path.join(output_dir, output_file)
-	    outputfiles_path.append(file_path)
+        for output_file in os.listdir(output_dir):
+            file_path = os.path.join(output_dir, output_file)
+            outputfiles_path.append(file_path)
 
     # return the multiple files in zip type
     # Folder name in ZIP archive which contains the above files
-    zip_dir = "output_of_segmentation"
+    zip_dir = "output_segmentation"
     zip_filename = "%s.zip" % zip_dir
     # Open StringIO to grab in-memory ZIP contents
     strio = StringIO.StringIO()
@@ -68,7 +68,7 @@ def segmentationView(request, format=None):
     for fpath in outputfiles_path:
         # Caculate path for file in zip
         fdir, fname = os.path.split(fpath)
-	subdir = os.path.basename(os.path.normpath(fdir))
+        subdir = os.path.basename(os.path.normpath(fdir))
         zip_path = os.path.join(zip_dir+"/"+subdir, fname)
         # Add file, at correct path
         zf.write(fpath, zip_path)
