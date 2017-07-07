@@ -6,20 +6,108 @@
         <meta name="description" content="OCR segmentation micro-service: extract the individual lines of text from the binarized image." />
         <meta name="author" content="Jingchao Luan" />
         <title>OCR Segmentation Micro-Service</title>
+        <style type="text/css">
+            p {margin-left: 30px;}
+            table {margin-left: 30px;}
+            .two_tab {margin-left: 60px;}
+            #center {text-align: center;}
+        </style>
     </head>
     <body>
-	<h2 align="center">OCR Segmentation Micro-Service</h2>
-	<br>
-	<h4>Goal:</h4>
-	<p>&nbsp;&nbsp;&nbsp;&nbsp;Extract the individual line images from the binarized image.</p>
-        <h4>Usage:</h4>
-        <p>&nbsp;&nbsp;&nbsp;&nbsp;1. Call OCR segmentation micro-service with url: "http://10.5.146.92:8002/segmentationapi".</p>
-        <p>&nbsp;&nbsp;&nbsp;&nbsp;2. Input: the path of the binarized image(s), and uploaded in form style. Usually the images are the output of OCR binarization service with extension ".bin.png".</p>
-        <p>&nbsp;&nbsp;&nbsp;&nbsp;3. Output: a zip file containing equal number of folders to the number of input images. Each folder contains the extracted line images. Usually they are {imagename}/0100??.bin.png</p>
-        <p>&nbsp;&nbsp;&nbsp;&nbsp;4. E.g. 
-		<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;For one image: curl -F "file=@path_to_image" -o name_of_output_file http://10.5.146.92:8002/segmentationapi
-		<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;For two images: curl -F "file1=@path_to_image1" -F "file2=@path_to_image2" -o name_of_output_file http://10.5.146.92:8002/segmentationapi</p>
-	<h4>Note:</h4>
-	<p>&nbsp;&nbsp;&nbsp;&nbsp;The image(s) must be the binarized image(s).</p>
+        <h2 align="center">OCR Segmentation Micro-Service</h2>
+        <br>
+        <h4>GOAL</h4>
+        <p>Extract the individual line images from the binarized image(s).</p>
+        
+        <h4>USAGE</h4>
+        <p>1. Call OCR segmentation micro-service with url: "http://10.5.146.92:8002/segmentationapi".</p>
+        <p>2. Input: </p>
+        <p class="two_tab">
+            1) The path of the binarized image(s), and uploaded in form style. Usually the images are the output of binarization service with extension ".bin.png".<br>
+            2) Optional. Specified parameter valuses which are listed in the following part, and send them in form style.</p>
+        <p>3. Output: </p>
+        <p class="two_tab"> A zip file containing equal number of folders to the number of input images. Each folder contains the extracted line images, and usually they are named as {imagename}_01????.bin.png</p>
+        <p>4. E.g. curl -F "<font color="red">image</font>=@<i>path_to_image1</i>" -F "<font color="red">image</font>=@<i>path_to_image2</i>" -F "<font color="red">threshold</font>=0.5" -o <i>name_of_output_file</i> http://10.5.146.92:8002/segmentationapi</p>
+
+        <h4>PARAMETERS (#11)</h4>
+        <table border="1" cellspacing="0" >
+            <tr bgcolor="silver">
+                <th>Parameter</th>
+                <th>Type</th>
+                <th>Default value</th>
+                <th>Comment</th>
+            </tr>
+            <tr>
+                <td>maxlines</td>
+                <td>Integer</td>
+                <td align="center">300</td>
+                <td>maximum # lines permitted</td>
+            </tr>
+            <tr>
+                <td>scale</td>
+                <td>Float</td>
+                <td  align="center">0.0</td>
+                <td>the basic scale of the document (roughly, xheight) 0=automatic</td>
+            </tr>
+            <tr>
+                <td>hscale</td>
+                <td>Float</td>
+                <td align="center">1.0</td>
+                <td>non-standard scaling of horizontal parameters</td>
+            </tr>
+            <tr>
+                <td>vscale</td>
+                <td>Float</td>
+                <td align="center">1.0</td>
+                <td>non-standard scaling of vertical parameters") # line parameters</td>
+            </tr>
+            <tr>
+                <td>threshold</td>
+                <td>Float</td>
+                <td align="center">0.2</td>
+                <td>baseline threshold</td>
+            </tr>
+            <tr>
+                <td>noise</td>
+                <td>Integer</td>
+                <td align="center">8</td>
+                <td>noise threshold for removing small components from lines</td>
+            </tr>
+            <tr>
+                <td>usegause</td>
+                <td>Boolean</td>
+                <td align="center">True</td>
+                <td>use gaussian instead of uniform</td>
+            </tr>
+            <tr>
+                <td>maxseps</td>
+                <td>Integer</td>
+                <td align="center">2</td>
+                <td>maximum # black column separators</td>
+            </tr>
+            <tr>
+                <td>sepwiden</td>
+                <td>Integer</td>
+                <td align="center">10</td>
+                <td>widen black separators (to account for warping)</td>
+            </tr>
+            <tr>
+                <td>maxcolseps</td>
+                <td>Integer</td>
+                <td align="center">3</td>
+                <td>maximum # whitespace column separators</td>
+            </tr>
+            <tr>
+                <td>csminheight</td>
+                <td>Float</td>
+                <td align="center">10.0</td>
+                <td>minimum column height (units=scale)</td>
+            </tr>
+        </table>
+
+        <h4><font color="red">NOTE</font></h4>
+        <p> 
+            1) The uploaded image(s) must be the binarized image(s).<br> 
+            2) The uploaded image variable name and specified parameters' name must be same with the parameters name in the above table.</p>
     </body>
 </html>
