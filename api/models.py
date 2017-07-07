@@ -3,8 +3,8 @@ from __future__ import unicode_literals
 
 from django.db import models
 
+### The parameters that can be set by an service API call
 class Parameters(models.Model):
-	### The following 11 parameters can be overwritten by users
 	# limits
 	maxlines = models.IntegerField(default=300, help_text="maximum # lines permitted")
 	# scale parameters
@@ -20,14 +20,3 @@ class Parameters(models.Model):
 	sepwiden = models.IntegerField(default=10, help_text="widen black separators (to account for warping)")
 	maxcolseps = models.IntegerField(default=3, help_text="maximum # whitespace column separators")
 	csminheight = models.FloatField(default=10.0, help_text="minimum column height (units=scale)")
-
-	### The following parameters needn't be overwritten by users
-	# limits
-	minscale = models.FloatField(default=1.0, help_text="minimum scale permitted")
-	# output parameters
-	pad = models.IntegerField(default=3, help_text="adding for extracted lines")
-	expand = models.IntegerField(default=3, help_text="expand mask for grayscale extraction")
-	# other parameters
-	quiet = models.BooleanField(default=False, help_text="be less verbose, usally use with parallel together")
-	nocheck = models.BooleanField(default=True, help_text="disable error checking on inputs")
-	parallel = models.IntegerField(default=0, help_text="number of parallel processes to use")

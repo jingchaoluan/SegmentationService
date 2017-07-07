@@ -6,5 +6,4 @@ class ParameterSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Parameters
 		fields = ('id', 'maxlines', 'scale', 'hscale', 'vscale', 'threshold', 
-			'noise', 'usegause', 'maxseps', 'sepwiden', 'maxcolseps', 'csminheight', 
-			'minscale', 'pad', 'expand', 'quiet', 'nocheck', 'parallel')
+			'noise', 'usegause', 'maxseps', 'sepwiden', 'maxcolseps', 'csminheight')
