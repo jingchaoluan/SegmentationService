@@ -28,7 +28,7 @@ from ocrolib.toplevel import *
 
 # The default parameters values
 # Users can custom the first 11 parameters
-args = {
+args_default = {
     # limits
     'maxlines':300,  # maximum # lines permitted
 
@@ -40,32 +40,37 @@ args = {
     # line parameters
     'threshold':0.2, # baseline threshold
     'noise':8,       # noise threshold for removing small components from lines
-    'usegause':True, # use gaussian instead of uniform
+    'usegause':False,# use gaussian instead of uniform
 
     # column separator parameters
-    'maxseps':2,     # maximum # black column separators
+    'maxseps':0,     # maximum # black column separators
     'sepwiden':10,   # widen black separators (to account for warping)
     'maxcolseps':3,  # maximum # whitespace column separators
     'csminheight':10.0,# minimum column height (units=scale)
 
-    ### The following parameters cannot be overwritten by users
+    'parallel':0,    # number of parallel CPUs to use
+
+    ### The following parameters needn't be overwritten by users
     # limits
     'minscale':1.0,  # minimum scale permitted
     # output parameters
     'pad':3,         # adding for extracted lines
     'expand':3,      # expand mask for grayscale extraction
     # other parameters
-    'nocheck':True,  # enable error checking on inputs
+    'nocheck':True,  # disable error checking on inputs
     'quiet':False,   # be less verbose, usally use with parallel together
-    'parallel':0,    # number of parallel processes to use
     'debug':False
 }
 
+args = {}
 
 # The entry of segmentation service
 # Return the directories, each directory related to a input image and stored the segmented line images  
 def segmentation_exec(images, parameters):
     # Update parameters values customed by user
+    # Each time update the args with the default args dictionary, avoid the effect of the previous update
+    global args
+    args = args_default.copy()
     args.update(parameters)
     print("==========")
     print(args)
