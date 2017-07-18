@@ -14,9 +14,11 @@ class Parameters(models.Model):
 	# line parameters
 	threshold = models.FloatField(default=0.2, help_text="baseline threshold")
 	noise = models.IntegerField(default=8, help_text="noise threshold for removing small components from lines")
-	usegause = models.BooleanField(default=True, help_text="use gaussian instead of uniform")
+	usegause = models.BooleanField(default=False, help_text="use gaussian instead of uniform")
 	# column separator parameters
 	maxseps = models.IntegerField(default=2, help_text="maximum # black column separators")
 	sepwiden = models.IntegerField(default=10, help_text="widen black separators (to account for warping)")
 	maxcolseps = models.IntegerField(default=3, help_text="maximum # whitespace column separators")
 	csminheight = models.FloatField(default=10.0, help_text="minimum column height (units=scale)")
+
+	parallel = models.IntegerField(default=0, help_text="number of parallel CPUs to use")
