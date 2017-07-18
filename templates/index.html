@@ -26,10 +26,10 @@
             1) The path of the binarized image(s), and uploaded in form style. Usually the images are the output of binarization service with extension ".bin.png".<br>
             2) Optional. Specified parameter valuses which are listed in the following part, and send them in form style.</p>
         <p>3. Output: </p>
-        <p class="two_tab"> A zip file containing equal number of folders to the number of input images. Each folder contains the extracted line images, and usually they are named as {imagename}_01????.bin.png</p>
+        <p class="two_tab"> A zip file containing equal number of folders to the number of input images. Each folder contains the extracted line images, and usually they are named as {<i>imagename</i>}_01????.bin.png</p>
         <p>4. E.g. curl -F "<font color="red">image</font>=@<i>path_to_image1</i>" -F "<font color="red">image</font>=@<i>path_to_image2</i>" -F "<font color="red">threshold</font>=0.5" -o <i>name_of_output_file</i> http://10.5.146.92:8002/segmentationapi</p>
 
-        <h4>PARAMETERS (#11)</h4>
+        <h4>PARAMETERS (#12)</h4>
         <table border="1" cellspacing="0" >
             <tr bgcolor="silver">
                 <th>Parameter</th>
@@ -102,6 +102,12 @@
                 <td>Float</td>
                 <td align="center">10.0</td>
                 <td>minimum column height (units=scale)</td>
+            </tr>
+            <tr>
+                <td>parallel</td>
+                <td>Integer</td>
+                <td align="center">0</td>
+                <td>number of parallel CPUs to use</td>
             </tr>
         </table>
 
